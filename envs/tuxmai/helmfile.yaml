@@ -12,6 +12,10 @@ releases:
           annotations:
             # MetalLB static IP
             "metallb.universe.tf/loadBalancerIPs": {{ env "METAL_LB_IP" | default "192.168.1.100" | quote }}
+        login:
+          service:
+            annotations:
+              "metallb.universe.tf/loadBalancerIPs": {{ env "LOGIN_METAL_LB_IP" | default "192.168.1.101" | quote }}
         zitadel:
           configmapConfig:
             Database:
@@ -21,8 +25,14 @@ releases:
                 Database: {{ env "DB_NAME" | default "zitadel" | quote }}
                 User:
                   Username: {{ env "DB_USER" | default "zitadel_user" | quote }}
-                Admin:
-                  Username: {{ env "DB_ADMIN_USER" | default "zitadel_admin" | quote }}
+            Admin:
+              Username: {{ env "DB_ADMIN_USER" | default "zitadel_admin" | quote }}
+            # Default Admin User
+            FirstInstance:
+              Org:
+                Human:
+                  Username: {{ env "ZITADEL_ADMIN_USERNAME" | default "admin@tuxmart.io" | quote }}
+                  Password: {{ env "ZITADEL_ADMIN_PASSWORD" | default "SuperSecret123!" | quote }}
           # Masterkey for encryption
           masterkey: {{ env "ZITADEL_MASTERKEY" | default "x123456789012345678901234567891y" | quote }}
         # Database passwords

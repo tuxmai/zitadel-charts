@@ -5,6 +5,11 @@ zitadel:
   configmapConfig:
     ExternalSecure: true
     ExternalDomain: "login.tuxmart.io"
+    FirstInstance:
+      Org:
+        Human:
+          # Username: 'admin@tuxmart.io' # Externalized to helmfile
+          # Password: 'SuperSecret123!'  # Externalized to helmfile
     Database:
       Postgres:
         Host: "127.0.0.1" # Replace with your external PostgreSQL host
@@ -18,6 +23,8 @@ zitadel:
           Username: "zitadel_admin"
           SSL:
             Mode: "disable"
+    Console:
+      Enabled: true
 
   # ZITADEL uses the masterkey for symmetric encryption.
   # Generate it with: tr -dc A-Za-z0-9 </dev/urandom | head -c 32
@@ -35,3 +42,12 @@ service:
   annotations:
     # MetalLB static IP annotation
     metallb.universe.tf/loadBalancerIPs: "127.0.0.1" # Replace with your static IP
+
+# Enable the new Login UI (V2)
+login:
+  enabled: true
+  service:
+    type: LoadBalancer
+    annotations:
+      # MetalLB static IP annotation for login UI
+      metallb.universe.tf/loadBalancerIPs: "" # Managed via Helmfile
