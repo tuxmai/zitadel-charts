@@ -15,6 +15,91 @@ By default, this chart installs a highly available Zitadel deployment.
 The chart deploys a Zitadel init job, a Zitadel setup job and a Zitadel deployment.
 By default, the execution order is orchestrated using Helm hooks on installations and upgrades.
 
+## External PostgreSQL Database Setup
+
+If you're using an external PostgreSQL database (not managed by this Helm chart), you **must** create the required database users and grant them proper permissions before deploying Zitadel.
+
+### Prerequisites
+
+1. A PostgreSQL server (version 12 or higher recommended)
+2. Superuser access to create databases and users
+
+### Required Setup Steps
+
+Connect to your PostgreSQL server as a superuser and execute the following:
+
+```sql
+-- 1. Create the database
+CREATE DATABASE zitadel;
+
+-- 2. Create the required users
+CREATE USER zitadel_user WITH PASSWORD 'your-user-password';
+CREATE USER zitadel_admin WITH PASSWORD 'your-admin-password';
+
+-- 3. Grant database-level privileges
+GRANT ALL PRIVILEGES ON DATABASE zitadel TO zitadel_user;
+GRANT ALL PRIVILEGES ON DATABASE zitadel TO zitadel_admin;
+
+-- 4. Grant user attributes (required for schema operations)
+ALTER USER zitadel_user WITH CREATEDB;
+ALTER USER zitadel_admin WITH CREATEDB CREATEROLE;
+
+-- 5. Connect to the zitadel database
+\c zitadel
+
+-- 6. Grant schema permissions
+GRANT ALL ON SCHEMA public TO zitadel_user;
+GRANT ALL ON SCHEMA public TO zitadel_admin;
+
+-- 7. Set default privileges for future objects
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO zitadel_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO zitadel_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO zitadel_admin;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO zitadel_admin;
+```
+
+### Configuration
+
+After setting up the database, configure your Helm values to point to the external database:
+
+```yaml
+zitadel:
+  configmapConfig:
+    Database:
+      Postgres:
+        Host: "your-postgres-host"
+        Port: 5432
+        Database: "zitadel"
+        User:
+          Username: "zitadel_user"
+          SSL:
+            Mode: "disable"  # or "require", "verify-full" for production
+        Admin:
+          Username: "zitadel_admin"
+          SSL:
+            Mode: "disable"
+
+# Provide passwords via environment variables
+env:
+  - name: ZITADEL_DATABASE_POSTGRES_USER_PASSWORD
+    value: "your-user-password"
+  - name: ZITADEL_DATABASE_POSTGRES_ADMIN_PASSWORD
+    value: "your-admin-password"
+```
+
+> [!IMPORTANT]
+> For production environments, store passwords in Kubernetes secrets instead of plain values:
+> ```bash
+> kubectl create secret generic zitadel-db-passwords \
+>   --from-literal=ZITADEL_DATABASE_POSTGRES_USER_PASSWORD='your-user-password' \
+>   --from-literal=ZITADEL_DATABASE_POSTGRES_ADMIN_PASSWORD='your-admin-password' \
+>   -n your-namespace
+> ```
+> Then reference the secret in your values:
+> ```yaml
+> envVarsSecret: "zitadel-db-passwords"
+> ```
+
 ## Install the Chart
 
 The easiest way to deploy a Helm release for Zitadel is by following the [Insecure Postgres Example](/examples/1-postgres-insecure/README.md).

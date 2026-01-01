@@ -1,0 +1,37 @@
+zitadel:
+  # The ZITADEL config under configmapConfig is written to a Kubernetes ConfigMap
+  # See all defaults here:
+  # https://github.com/zitadel/zitadel/blob/main/cmd/defaults.yaml
+  configmapConfig:
+    ExternalSecure: true
+    ExternalDomain: "login.tuxmart.io"
+    Database:
+      Postgres:
+        Host: "127.0.0.1" # Replace with your external PostgreSQL host
+        Port: 5432
+        Database: "zitadel"
+        User:
+          Username: "zitadel_user"
+          SSL:
+            Mode: "disable" # or "require", "verify-full"
+        Admin:
+          Username: "zitadel_admin"
+          SSL:
+            Mode: "disable"
+
+  # ZITADEL uses the masterkey for symmetric encryption.
+  # Generate it with: tr -dc A-Za-z0-9 </dev/urandom | head -c 32
+  masterkey: ""
+
+# Image configuration
+image:
+  repository: ghcr.io/zitadel/zitadel
+  tag: "v4.2.0" # Current appVersion of the chart
+
+# Service configuration for MetalLB
+service:
+  type: LoadBalancer
+  port: 8080
+  annotations:
+    # MetalLB static IP annotation
+    metallb.universe.tf/loadBalancerIPs: "127.0.0.1" # Replace with your static IP
