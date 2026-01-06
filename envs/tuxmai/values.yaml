@@ -6,6 +6,10 @@ zitadel:
     ExternalSecure: true
     ExternalDomain: "login.tuxmart.io"
     FirstInstance:
+      Features:
+        LoginV2:
+          Required: true
+        ConsoleUseV2UserApi: true
       Org:
         Human:
           # Username: 'admin@tuxmart.io' # Externalized to helmfile
@@ -33,7 +37,7 @@ zitadel:
 # Image configuration
 image:
   repository: ghcr.io/zitadel/zitadel
-  tag: "v4.2.0" # Current appVersion of the chart
+  tag: "v4.8.1" # Current appVersion of the chart
 
 # Service configuration for MetalLB
 service:
