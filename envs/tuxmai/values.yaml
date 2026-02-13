@@ -14,6 +14,9 @@ zitadel:
         Human:
           # Username: 'admin@tuxmart.io' # Externalized to helmfile
           # Password: 'SuperSecret123!'  # Externalized to helmfile
+        LoginClient:
+          Machine:
+            Username: 'login-client-v2'
     Database:
       Postgres:
         Host: "127.0.0.1" # Replace with your external PostgreSQL host
